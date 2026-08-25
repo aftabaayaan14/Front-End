@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scolastic AI</title>
     <style>
-        /* ----- RESET & BASE ----- */
         * {
             margin: 0;
             padding: 0;
@@ -22,7 +21,6 @@
             padding: 20px;
         }
 
-        /* ----- MAIN APP CONTAINER ----- */
         .app {
             width: 100%;
             max-width: 900px;
@@ -35,7 +33,6 @@
             flex-direction: column;
         }
 
-        /* ----- TOP HEADER (Your original .top) ----- */
         .top {
             background: linear-gradient(135deg, #1a0a6b, #2d1b8e);
             color: aliceblue;
@@ -113,7 +110,6 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        /* ----- CHAT BODY (Your original .body) ----- */
         .body {
             flex: 1;
             background: #f0f4ff;
@@ -124,7 +120,6 @@
             gap: 12px;
         }
 
-        /* Scrollbar styling */
         .body::-webkit-scrollbar {
             width: 6px;
         }
@@ -136,7 +131,6 @@
             border-radius: 8px;
         }
 
-        /* ----- MESSAGES ----- */
         .message {
             display: flex;
             gap: 10px;
@@ -218,7 +212,6 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        /* ----- BOTTOM INPUT (Your original .bottom) ----- */
         .bottom {
             background: white;
             padding: 16px 24px;
@@ -286,7 +279,31 @@
             transform: scale(0.96);
         }
 
-        /* ----- RESPONSIVE DESIGN (Mobile Friendly) ----- */
+        /* Typing animation for bubbles */
+        .typing-dots {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            animation: typingBounce 1.4s ease-in-out infinite;
+        }
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
         @media (max-width: 640px) {
             body {
                 padding: 10px;
@@ -321,26 +338,11 @@
                 padding: 10px;
             }
         }
-
-        @media (max-width: 400px) {
-            .top h1 {
-                font-size: 14px;
-            }
-            .message .bubble {
-                font-size: 13px;
-                padding: 10px 14px;
-            }
-            .box {
-                font-size: 13px;
-            }
-        }
     </style>
 </head>
 <body>
 
     <div class="app">
-
-        <!-- TOP HEADER -->
         <div class="top">
             <div class="top-left">
                 <div class="avatar">AI</div>
@@ -348,7 +350,7 @@
                     <h1>Scolastica - AI Agent</h1>
                     <div class="status">
                         <span class="status-dot"></span>
-                        <span>Online · Ready to help</span>
+                        <span id="connectionStatus">Connecting...</span>
                     </div>
                 </div>
             </div>
@@ -357,10 +359,7 @@
             </div>
         </div>
 
-        <!-- CHAT BODY -->
         <div class="body" id="chatBody">
-
-            <!-- Sample AI Message -->
             <div class="message message-agent">
                 <div class="avatar-small">AI</div>
                 <div class="bubble">
@@ -368,43 +367,39 @@
                     <span class="timestamp">Just now</span>
                 </div>
             </div>
-
-            <!-- Sample User Message -->
-            <div class="message message-user">
-                <div class="avatar-small">You</div>
-                <div class="bubble">
-                    I need help with math homework.
-                    <span class="timestamp">2:30 PM</span>
-                </div>
-            </div>
-
-            <!-- Sample AI Reply -->
-            <div class="message message-agent">
-                <div class="avatar-small">AI</div>
-                <div class="bubble">
-                    Sure! What topic are you working on? Algebra, geometry, or calculus?
-                    <span class="timestamp">2:31 PM</span>
-                </div>
-            </div>
-
         </div>
 
-        <!-- BOTTOM INPUT -->
         <div class="bottom">
             <div class="input-wrapper">
                 <textarea class="box" id="userInput" placeholder="Type your query here..." rows="1"></textarea>
                 <button class="button" id="sendButton">SUBMIT QUERY</button>
             </div>
         </div>
-
     </div>
 
-    <!-- JAVASCRIPT (Optional for demo - makes it interactive) -->
     <script>
-        // This is just to show you how it COULD work - remove it if you want pure HTML/CSS
         const chatBody = document.getElementById('chatBody');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
+        const connectionStatus = document.getElementById('connectionStatus');
+
+        // Check backend connection
+        async function checkConnection() {
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                if (response.ok) {
+                    connectionStatus.textContent = 'Online ✅';
+                    connectionStatus.style.color = '#22c55e';
+                } else {
+                    connectionStatus.textContent = 'Backend Error ❌';
+                    connectionStatus.style.color = '#ef4444';
+                }
+            } catch (error) {
+                connectionStatus.textContent = 'Offline ❌';
+                connectionStatus.style.color = '#ef4444';
+                console.log('Backend not running. Start with: python app.py');
+            }
+        }
 
         // Auto-resize textarea
         userInput.addEventListener('input', function() {
@@ -412,10 +407,14 @@
             this.style.height = this.scrollHeight + 'px';
         });
 
-        // Send message (demo - just echoes back)
-        function sendMessage() {
+        // Send message to backend
+        async function sendMessage() {
             const text = userInput.value.trim();
             if (text === '') return;
+
+            // Disable button during processing
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
 
             // Add user message
             const userMsg = document.createElement('div');
@@ -433,37 +432,103 @@
             userInput.value = '';
             userInput.style.height = 'auto';
 
-            // Auto-reply (fake AI)
-            setTimeout(() => {
-                const replies = [
-                    "That's interesting! Tell me more about it.",
-                    "I understand. Let me think about that for a moment.",
-                    "Great question! Here's what I think...",
-                    "Thanks for asking! I'd be happy to help with that.",
-                    "That's a complex topic. Let me break it down for you.",
-                    "I see! Have you considered looking at it from this perspective?"
-                ];
-                const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            // Add typing indicator
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'message message-agent';
+            typingMsg.id = 'typingIndicator';
+            typingMsg.innerHTML = `
+                <div class="avatar-small">AI</div>
+                <div class="bubble">
+                    <span class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </span>
+                    <span class="timestamp">typing...</span>
+                </div>
+            `;
+            chatBody.appendChild(typingMsg);
+            chatBody.scrollTop = chatBody.scrollHeight;
 
-                const aiMsg = document.createElement('div');
-                aiMsg.className = 'message message-agent';
-                aiMsg.innerHTML = `
+            try {
+                const response = await fetch('http://localhost:5000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        history: []
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove typing indicator
+                const typingElement = document.getElementById('typingIndicator');
+                if (typingElement) typingElement.remove();
+
+                if (response.ok) {
+                    const aiMsg = document.createElement('div');
+                    aiMsg.className = 'message message-agent';
+                    aiMsg.innerHTML = `
+                        <div class="avatar-small">AI</div>
+                        <div class="bubble">
+                            ${data.reply.replace(/\n/g, '<br>')}
+                            <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    `;
+                    chatBody.appendChild(aiMsg);
+                } else {
+                    // Show error from backend
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'message message-agent';
+                    errorMsg.innerHTML = `
+                        <div class="avatar-small">AI</div>
+                        <div class="bubble" style="background: #fee2e2; color: #991b1b;">
+                            ⚠️ Error: ${data.error || 'Something went wrong'}
+                            <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    `;
+                    chatBody.appendChild(errorMsg);
+                }
+            } catch (error) {
+                // Remove typing indicator
+                const typingElement = document.getElementById('typingIndicator');
+                if (typingElement) typingElement.remove();
+
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'message message-agent';
+                errorMsg.innerHTML = `
                     <div class="avatar-small">AI</div>
-                    <div class="bubble">
-                        ${randomReply}
+                    <div class="bubble" style="background: #fee2e2; color: #991b1b;">
+                        ❌ Can't connect to backend. Make sure it's running with: python app.py
                         <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                 `;
-                chatBody.appendChild(aiMsg);
+                chatBody.appendChild(errorMsg);
+                console.error('Error:', error);
+            }
 
-                // Scroll to bottom
-                chatBody.scrollTop = chatBody.scrollHeight;
-            }, 800 + Math.random() * 1200);
-
-            // Scroll to bottom
+            // Re-enable button
+            sendButton.disabled = false;
+            sendButton.textContent = 'SUBMIT QUERY';
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
+        // Reset chat
+        function resetChat() {
+            const messages = chatBody.querySelectorAll('.message');
+            messages.forEach((msg, index) => {
+                if (index > 0) msg.remove(); // Keep only first message
+            });
+            chatBody.scrollTop = 0;
+
+            // Optional: Reset on backend too
+            fetch('http://localhost:5000/api/reset', {
+                method: 'POST'
+            }).catch(err => console.log('Reset not available'));
+        }
+
+        // Event listeners
         sendButton.addEventListener('click', sendMessage);
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -472,17 +537,10 @@
             }
         });
 
-        // Reset chat
-        function resetChat() {
-            const messages = chatBody.querySelectorAll('.message');
-            messages.forEach((msg, index) => {
-                if (index > 2) msg.remove(); // Keep first 3 sample messages
-            });
-            chatBody.scrollTop = 0;
-        }
-
-        // Make reset function global for the button
-        window.resetChat = resetChat;
+        // Check connection when page loads
+        checkConnection();
+        // Check every 30 seconds
+        setInterval(checkConnection, 30000);
     </script>
 
 </body>
