@@ -1,33 +1,68 @@
+# ============================================
+# IMPORTS - The tools we need
+# ============================================
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import openai
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
+# ============================================
+# CONFIGURATION - Setup the app
+# ============================================
+
+# Load environment variables from .env file
 load_dotenv()
 
-# Initialize Flask app
+# Create the Flask app
 app = Flask(__name__)
 
-# Enable CORS for frontend
+# Enable CORS (allows frontend to talk to backend)
 CORS(app)
 
-# Configure OpenAI
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# Configure Gemini with your API key
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+genai.configure(api_key=GEMINI_API_KEY)
 
-# Test route
+# Initialize the model
+# Available models: 'gemini-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'
+model = genai.GenerativeModel('gemini-pro')
+
+# ============================================
+# ROUTES - The URLs your frontend will call
+# ============================================
+
+# Test route - check if backend is running
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({
-        'message': 'Scolastic AI Backend is running! 🎉',
+        'message': 'Scolastic AI Backend with Gemini is running! 🎉',
         'status': 'online'
     })
 
-# Main chat endpoint
+# Health check - verify API key works
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    try:
+        # Test if API key works by listing models
+        genai.list_models()
+        return jsonify({
+            'status': 'healthy',
+            'api_key_valid': True,
+            'model': 'gemini-pro'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'api_key_valid': False,
+            'error': str(e)
+        }), 503
+
+# Main chat endpoint - where the AI magic happens
 @app.route('/api/chat', methods=['POST'])
 def chat():
     try:
+        # Get the user's message from the frontend
         data = request.get_json()
         
         if not data or 'message' not in data:
@@ -35,23 +70,19 @@ def chat():
         
         user_message = data['message']
         
-        # Get conversation history if provided
-        messages = data.get('history', [])
-        messages.append({
-            'role': 'user',
-            'content': user_message
-        })
+        # Get conversation history if provided (Gemini format)
+        history = data.get('history', [])
         
-        # Call OpenAI API
-        response = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
-            messages=messages,
-            temperature=0.7,
-            max_tokens=500
-        )
+        # Start a new chat session
+        chat = model.start_chat(history=history)
         
-        ai_reply = response.choices[0].message.content
+        # Send the user's message and get response
+        response = chat.send_message(user_message)
         
+        # Extract the AI's reply
+        ai_reply = response.text
+        
+        # Send reply back to frontend
         return jsonify({
             'reply': ai_reply,
             'status': 'success'
@@ -64,28 +95,17 @@ def chat():
             'status': 'failed'
         }), 500
 
-# Reset endpoint
+# Reset conversation - returns a welcome message
 @app.route('/api/reset', methods=['POST'])
 def reset_conversation():
     return jsonify({
-        'reply': 'Hello! I\'m your Scolastic AI assistant. How can I help you with your studies today?',
+        'reply': 'Hello! I\'m your Scolastic AI assistant powered by Gemini. How can I help you with your studies today?',
         'status': 'success'
     })
 
-# Health check
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    try:
-        openai.Model.list()
-        return jsonify({
-            'status': 'healthy',
-            'api_key_valid': True
-        })
-    except:
-        return jsonify({
-            'status': 'unhealthy',
-            'api_key_valid': False
-        }), 503
+# ============================================
+# RUN THE SERVER
+# ============================================
 
 if __name__ == '__main__':
     app.run(
