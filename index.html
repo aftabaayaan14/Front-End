@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scolastic AI</title>
+    <title>Scolastic AI - Gemini</title>
     <style>
         * {
             margin: 0;
@@ -52,15 +52,15 @@
         .avatar {
             width: 42px;
             height: 42px;
-            background: linear-gradient(135deg, #6c5ce7, #a855f7);
+            background: linear-gradient(135deg, #4285f4, #34a853);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
             color: white;
-            box-shadow: 0 0 20px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 0 20px rgba(66, 133, 244, 0.3);
         }
 
         .top h1 {
@@ -68,12 +68,18 @@
             font-weight: 600;
         }
 
+        .top h1 span {
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
         .status {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 12px;
-            color: #94a3b8;
         }
 
         .status-dot {
@@ -88,11 +94,6 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(0.85); }
-        }
-
-        .top-actions {
-            display: flex;
-            gap: 8px;
         }
 
         .top-actions button {
@@ -172,7 +173,7 @@
         }
 
         .message-agent .avatar-small {
-            background: linear-gradient(135deg, #6c5ce7, #a855f7);
+            background: linear-gradient(135deg, #4285f4, #34a853);
         }
 
         .message-user .avatar-small {
@@ -234,8 +235,8 @@
         }
 
         .input-wrapper:focus-within {
-            border-color: #1a0a6b;
-            box-shadow: 0 0 0 3px rgba(26, 10, 107, 0.1);
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
         }
 
         .box {
@@ -249,7 +250,6 @@
             outline: none;
             min-height: 40px;
             max-height: 120px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .box::placeholder {
@@ -257,7 +257,7 @@
         }
 
         .button {
-            background: linear-gradient(135deg, #1a0a6b, #2d1b8e);
+            background: linear-gradient(135deg, #4285f4, #34a853);
             border: none;
             color: white;
             padding: 10px 24px;
@@ -272,14 +272,13 @@
 
         .button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(26, 10, 107, 0.3);
+            box-shadow: 0 8px 24px rgba(66, 133, 244, 0.3);
         }
 
         .button:active {
             transform: scale(0.96);
         }
 
-        /* Typing animation for bubbles */
         .typing-dots {
             display: inline-flex;
             gap: 4px;
@@ -305,38 +304,25 @@
         }
 
         @media (max-width: 640px) {
-            body {
-                padding: 10px;
-            }
-            .app {
-                height: 95vh;
-                border-radius: 12px;
-            }
-            .top {
-                padding: 12px 16px;
-            }
-            .top h1 {
-                font-size: 16px;
-            }
-            .body {
-                padding: 12px 16px;
-            }
-            .message {
-                max-width: 90%;
-            }
-            .bottom {
-                padding: 12px 16px;
-                flex-direction: column;
-                gap: 8px;
-            }
-            .input-wrapper {
-                padding: 4px 4px 4px 12px;
-                width: 100%;
-            }
-            .button {
-                width: 100%;
-                padding: 10px;
-            }
+            body { padding: 10px; }
+            .app { height: 95vh; border-radius: 12px; }
+            .top { padding: 12px 16px; }
+            .top h1 { font-size: 16px; }
+            .body { padding: 12px 16px; }
+            .message { max-width: 90%; }
+            .bottom { padding: 12px 16px; flex-direction: column; gap: 8px; }
+            .input-wrapper { padding: 4px 4px 4px 12px; width: 100%; }
+            .button { width: 100%; padding: 10px; }
+        }
+
+        /* Gemini badge */
+        .gemini-badge {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 10px;
+            border-radius: 12px;
+            color: #94a3b8;
+            margin-left: 8px;
         }
     </style>
 </head>
@@ -345,12 +331,13 @@
     <div class="app">
         <div class="top">
             <div class="top-left">
-                <div class="avatar">AI</div>
+                <div class="avatar">✦</div>
                 <div>
-                    <h1>Scolastica - AI Agent</h1>
+                    <h1>Scolastica - <span>Gemini</span> AI</h1>
                     <div class="status">
                         <span class="status-dot"></span>
                         <span id="connectionStatus">Connecting...</span>
+                        <span class="gemini-badge">Powered by Google</span>
                     </div>
                 </div>
             </div>
@@ -361,9 +348,9 @@
 
         <div class="body" id="chatBody">
             <div class="message message-agent">
-                <div class="avatar-small">AI</div>
+                <div class="avatar-small">✦</div>
                 <div class="bubble">
-                    Hello! I'm your Scolastic AI assistant. How can I help you with your studies today?
+                    Hello! I'm your Scolastic AI assistant, powered by Google's Gemini. How can I help you with your studies today?
                     <span class="timestamp">Just now</span>
                 </div>
             </div>
@@ -371,7 +358,7 @@
 
         <div class="bottom">
             <div class="input-wrapper">
-                <textarea class="box" id="userInput" placeholder="Type your query here..." rows="1"></textarea>
+                <textarea class="box" id="userInput" placeholder="Ask me anything..." rows="1"></textarea>
                 <button class="button" id="sendButton">SUBMIT QUERY</button>
             </div>
         </div>
@@ -383,12 +370,13 @@
         const sendButton = document.getElementById('sendButton');
         const connectionStatus = document.getElementById('connectionStatus');
 
-        // Check backend connection
+        // Check if backend is running
         async function checkConnection() {
             try {
                 const response = await fetch('http://localhost:5000/api/health');
                 if (response.ok) {
-                    connectionStatus.textContent = 'Online ✅';
+                    const data = await response.json();
+                    connectionStatus.textContent = `Online ✅ (${data.model || 'Gemini'})`;
                     connectionStatus.style.color = '#22c55e';
                 } else {
                     connectionStatus.textContent = 'Backend Error ❌';
@@ -412,7 +400,6 @@
             const text = userInput.value.trim();
             if (text === '') return;
 
-            // Disable button during processing
             sendButton.disabled = true;
             sendButton.textContent = 'Sending...';
 
@@ -428,7 +415,6 @@
             `;
             chatBody.appendChild(userMsg);
 
-            // Clear input
             userInput.value = '';
             userInput.style.height = 'auto';
 
@@ -437,7 +423,7 @@
             typingMsg.className = 'message message-agent';
             typingMsg.id = 'typingIndicator';
             typingMsg.innerHTML = `
-                <div class="avatar-small">AI</div>
+                <div class="avatar-small">✦</div>
                 <div class="bubble">
                     <span class="typing-dots">
                         <span></span><span></span><span></span>
@@ -462,7 +448,6 @@
 
                 const data = await response.json();
 
-                // Remove typing indicator
                 const typingElement = document.getElementById('typingIndicator');
                 if (typingElement) typingElement.remove();
 
@@ -470,7 +455,7 @@
                     const aiMsg = document.createElement('div');
                     aiMsg.className = 'message message-agent';
                     aiMsg.innerHTML = `
-                        <div class="avatar-small">AI</div>
+                        <div class="avatar-small">✦</div>
                         <div class="bubble">
                             ${data.reply.replace(/\n/g, '<br>')}
                             <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -478,11 +463,10 @@
                     `;
                     chatBody.appendChild(aiMsg);
                 } else {
-                    // Show error from backend
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'message message-agent';
                     errorMsg.innerHTML = `
-                        <div class="avatar-small">AI</div>
+                        <div class="avatar-small">✦</div>
                         <div class="bubble" style="background: #fee2e2; color: #991b1b;">
                             ⚠️ Error: ${data.error || 'Something went wrong'}
                             <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -491,44 +475,37 @@
                     chatBody.appendChild(errorMsg);
                 }
             } catch (error) {
-                // Remove typing indicator
                 const typingElement = document.getElementById('typingIndicator');
                 if (typingElement) typingElement.remove();
 
                 const errorMsg = document.createElement('div');
                 errorMsg.className = 'message message-agent';
                 errorMsg.innerHTML = `
-                    <div class="avatar-small">AI</div>
+                    <div class="avatar-small">✦</div>
                     <div class="bubble" style="background: #fee2e2; color: #991b1b;">
                         ❌ Can't connect to backend. Make sure it's running with: python app.py
                         <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                 `;
                 chatBody.appendChild(errorMsg);
-                console.error('Error:', error);
             }
 
-            // Re-enable button
             sendButton.disabled = false;
             sendButton.textContent = 'SUBMIT QUERY';
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-        // Reset chat
         function resetChat() {
             const messages = chatBody.querySelectorAll('.message');
             messages.forEach((msg, index) => {
-                if (index > 0) msg.remove(); // Keep only first message
+                if (index > 0) msg.remove();
             });
             chatBody.scrollTop = 0;
-
-            // Optional: Reset on backend too
             fetch('http://localhost:5000/api/reset', {
                 method: 'POST'
             }).catch(err => console.log('Reset not available'));
         }
 
-        // Event listeners
         sendButton.addEventListener('click', sendMessage);
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -537,9 +514,8 @@
             }
         });
 
-        // Check connection when page loads
+        // Check connection on load and every 30 seconds
         checkConnection();
-        // Check every 30 seconds
         setInterval(checkConnection, 30000);
     </script>
 
